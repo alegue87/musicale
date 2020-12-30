@@ -1,3 +1,11 @@
+# Musicale
+
+App per l'esecuzione e la composizione di file tipo MusicXML.
+
+Utilizza un backend servito da Directus per la gestione dei file musicali XML.
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

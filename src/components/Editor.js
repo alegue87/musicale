@@ -4,7 +4,8 @@ import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import axios from "axios";
 import ReactDomServer, { renderToStaticMarkup } from 'react-dom/server'
 
-import { Button, Container, Input, Loader, Panel, Icon, Divider, List } from 'rsuite'
+import { 
+  Button, Container, Input, Loader, Panel, Icon, Divider, List, Notification } from 'rsuite'
 //import { TestSheet } from './TestSheet'
 import Sheet from './Sheet'
 import { Measure } from './measure/Measure';
@@ -41,7 +42,8 @@ export default class Editor extends React.Component {
           currentAction: "",
           beamNumber: 1,
           metric: { beats: beats, beatType: beatType},
-          alterations: []
+          alterations: [],  // alterazioni bemolle / diesis
+          textList: []      // Testo sopra le note
       }
   
       const appendScript = (scriptToAppend) => {
@@ -81,7 +83,7 @@ export default class Editor extends React.Component {
     }
 
     makeSheet(){
-      const { noteList, measureList, divisions, metric, title, alterations } = this.state
+      const { noteList, measureList, divisions, metric, title, alterations, textList } = this.state
 
       if(noteList.length === 0){
         return <Sheet title={title}>
@@ -102,6 +104,7 @@ export default class Editor extends React.Component {
       let measureNotes = []
       let measures = []
       let measureIndex = 0
+      let i = 0
       for( let note of noteList ){
         measureDuration += note.props.duration
 
@@ -111,12 +114,16 @@ export default class Editor extends React.Component {
           measureNotes = []
         }
         
+        if( textList[i] !== undefined ){
+          measureNotes.push(textList[i])
+        }
         measureNotes.push(note)
         measures[measureIndex] = measureNotes
+        i++
       }
 
       measureList.clear()
-      let i = 0
+      i = 0
       for( let measure of measures ){
         measureList.push(
           <Measure key={i}
@@ -161,7 +168,7 @@ export default class Editor extends React.Component {
     }
 
     action(){
-      const { noteList, alterations, divisions, currentAction } = this.state
+      const { noteList, alterations, divisions, currentAction, textList } = this.state
     
       const value = currentAction.toLowerCase()
       let info = value.split(' ')
@@ -171,6 +178,7 @@ export default class Editor extends React.Component {
       switch(info[0]) {
         case "del":
           noteList.pop()
+
           this.setState({noteList: noteList})
           this.loadAndRender()
           return
@@ -192,6 +200,9 @@ export default class Editor extends React.Component {
               duration={calcDuration(type, false, divisions)}
             />
           }
+          noteList.push( note )
+          this.setState({noteList: noteList, currentAction: ""})
+          this.loadAndRender()
           break
         
         // alterazione su key ( linee )
@@ -213,7 +224,7 @@ export default class Editor extends React.Component {
         // Testo sopra alla nota
         case "text":
           // Inserisce testo sopra la nota
-          const text = currentAction.split('text')[1]
+          const text = currentAction.split('text')[1].trim()
           let textUp = 
           <direction>
             <direction-type>
@@ -223,9 +234,13 @@ export default class Editor extends React.Component {
               <words></words>
             </direction-type>
           </direction>
-          noteList.push(textUp)
-          this.setState({noteList: noteList, currentAction: ""})
-          this.loadAndRender()
+          textList[noteList.length] = textUp
+          this.setState({textList: textList, currentAction: ""})
+          //this.loadAndRender()
+          Notification['success']({
+            title:'Testo aggiunto',
+            description:`"${text}"`
+          })
           break
 
         default:
@@ -347,7 +362,7 @@ export default class Editor extends React.Component {
             />
             <Input size='lg'
               placeholder={"Nota: \"G 4 half\" + ⏎ "}
-              onChange={ _.debounce( (v) => this.setState({currentAction: v}), 50 ) }
+              onChange={ _.debounce( (v) => this.setState({currentAction: v}), 100 ) }
               onPressEnter={ this.action.bind(this) }
               style={{textAlign:'center'}}
             />

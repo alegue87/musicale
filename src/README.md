@@ -1,3 +1,6 @@
+30.12.20
+v0.1.2
+    Fix inserimento testo
 
 28.12.20
 v0.1.1

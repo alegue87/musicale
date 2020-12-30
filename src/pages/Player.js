@@ -79,10 +79,13 @@ export default class Player extends React.Component{
                                 return <List.Item
                                     style={{textAlign:"left", padding:"10px", cursor:'pointer'}}
                                     onClick={ () => this.setSong(song.id, song.xml) }
-                                    >{song.title}
-                                    
-                                    <Tag color='green' style={{float:"right", fontSize:'11px'}}>
-                                        {song.tags[0]}</Tag>
+                                    ><div>
+                                        {song.title}
+                                    </div>
+                                    <div style={{minHeight:'20px'}}>
+                                        <Tag color='green' style={{float:"right", fontSize:'11px'}}>
+                                            {song.tags[0]}</Tag>
+                                    </div>
                                 </List.Item>
                             })}
                         </List>
